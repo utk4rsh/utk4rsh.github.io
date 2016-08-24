@@ -5,7 +5,380 @@
     <atom:link href="http://utk4rsh.github.io/feed.xml" rel="self" type="application/rss+xml"/>
     <link>http://utk4rsh.github.io/</link>
     <description></description>
-    <pubDate>Tue, 16 Aug 2016 11:30:50 +0530</pubDate>
+    <pubDate>Thu, 25 Aug 2016 01:22:34 +0530</pubDate>
+    
+      <item>
+        <title>Caffe &amp; Deep Visualization Toolbox</title>
+        <link>http://utk4rsh.github.io/2016/03/12/deep-visualization-toolbox.html</link>
+        <guid isPermaLink="true">http://utk4rsh.github.io/2016/03/12/deep-visualization-toolbox.html</guid>
+        <description>&lt;p&gt;I attended a meetup and talk by Gene Kogan and was completely fascinated by the visualization tools used by him for few of his computer vision examples. I looked for lot of tools that help to visualize Neural Networks. Finally I bumped into Deep Visualization ToolBox.&lt;/p&gt;
+
+&lt;p&gt;A lot of times features in neural networks in computer vision (specifically Convolution Neural Networks) are hard to imagine. Deep neural networks have been mostly thought of as “black boxes” and their inner workings are mysterious and inscrutable. While going through most of the famous CNNs that have increased accuracy in image classification, you would come across description about the layers stating that the neurons in the Jth layer learn to detect edges, the pooling layer probably
+relaxes the strictness of features in convolution inputs, however with little justification about how and why about the feature.&lt;/p&gt;
+
+&lt;p&gt;Deep Visualization ToolBox helps to visualize neuron by neuron features in layers where you can actually see that a particular layer is learning to detect the edges or another is learning to detect the light intensity.&lt;/p&gt;
+
+&lt;p&gt;Deep Visualization ToolBox uses already trained models in Caffe and creates synthetic image representations in each layer of the model. More fascinating details here.&lt;/p&gt;
+
+&lt;p&gt;I made several attempts to install Caffe and Deep Visualization ToolBox on my Ubuntu 15.10 system, one of them was disastrous enough to leave my system in a unusable state (Not good at linux, probably executed something really vicious from some forum comment).&lt;/p&gt;
+
+&lt;h3 id=&quot;caffe-installation&quot;&gt;Caffe installation&lt;/h3&gt;
+
+&lt;p&gt;Caffe installation page describes the details step by step and in details.However there were still few hiccups in between, solutions for which I had to google. I would recommend following the Caffe page for installation but in case you face any of the issues listed below which I faced, the notes might help you as well.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Follow the prerequisite for Ubuntu Systems here. All dependencies can be installed using the commands mentioned on the page. You might need to install CMake if you don’t have it installed already.
+sudo apt-get install cmake&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Clone Caffe from github. You need to work on a specific branch of Caffe for Deep Visualization Toolbox. Details are described on Github page.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Compile Caffe using the steps described here. Edit MakeFile.config to install Caffe in CPU mode only if you don’t have GPU.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;If make in step 3 fails with “fatal error: hdf5.h: No such file or directory caffe”, you need to create a sym-link for hd5 libraries in /usr/lib/x86_64-linux-gnu.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;gp&quot;&gt;$ &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cd&lt;/span&gt; /usr/lib/x86_64-linux-gnu
+&lt;span class=&quot;gp&quot;&gt;$ &lt;/span&gt;sudo ln -s libhdf5_serial.so.8.0.2 libhdf5.so
+&lt;span class=&quot;gp&quot;&gt;$ &lt;/span&gt;sudo ln -s libhdf5_serial_hl.so.8.0.2 libhdf5_hl.so&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;Also, add /usr/include/hdf5/serial in INCLUDE_DIR in Makefile.config&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;INCLUDE_DIRS :&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;PYTHON_INCLUDE&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt; /usr/local/include /usr/include/hdf5/serial&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;If make install / make -j8 fails with “fatal error: caffe/proto/caffe.pb.h: No such file or directory”. Running the following commands in Caffe directory should solve the issues.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;gp&quot;&gt;$ &lt;/span&gt;protoc src/caffe/proto/caffe.proto –cpp_out&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;.
+&lt;span class=&quot;gp&quot;&gt;$ &lt;/span&gt;mkdir include/caffe/proto
+&lt;span class=&quot;gp&quot;&gt;$ &lt;/span&gt;mv src/caffe/proto/caffe.pb.h include/caffe/proto&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Add /usr/lib/x86_64-linux-gnu/hdf5/serial/ to LIBRARY_DIR in Makefile.config is you face error : “/usr/bin/ld: cannot find -lhdf5_hl /usr/bin/ld: cannot find -lhdf5”&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;LIBRARY_DIRS:&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;PYTHON_LIB&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt; /usr/local/lib /usr/lib /usr/lib/x86_64-linux-gnu/hdf5/serial&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Make should finish successfully at this point.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;deep-visualization-toolbox-installation&quot;&gt;Deep Visualization ToolBox installation&lt;/h3&gt;
+
+&lt;p&gt;Deep Visualization Toolbox is pretty simple as described in the github page.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Need to install the prerequisite opencv, scipy.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;gp&quot;&gt;$ &lt;/span&gt;sudo apt-get install python-opencv
+&lt;span class=&quot;gp&quot;&gt;$ &lt;/span&gt;sudo apt-get install scipy
+&lt;span class=&quot;gp&quot;&gt;$ &lt;/span&gt;sudo apt-get install python-numpy python-scipy python-matplotlib &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    ipython ipython-notebook python-pandas python-sympy python-nose&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;Configure the toolbox using the steps described on the github page.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Fetch the models using fetch.sh. If the fetch fails with “Can’t create dir”, this is probably because of extra space at line 38 second argument. Fixing that should complete the download.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Disable GPU at line 30 caffevis_mode_gpu = False.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Time to run the toolbox and visualize CNN layers!&lt;/p&gt;
+
+&lt;h3 id=&quot;sample-images&quot;&gt;Sample Images&lt;/h3&gt;
+
+&lt;p&gt;&lt;img src=&quot;/img/deep_vis_amb.png&quot; alt=&quot;Deep Visualization Ambulance&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/img/deep_vis_bottle.png&quot; alt=&quot;Deep Visualization Bottle&quot; /&gt;&lt;/p&gt;
+</description>
+        <pubDate>Sat, 12 Mar 2016 00:00:00 +0530</pubDate>
+      </item>
+    
+      <item>
+        <title>Simple Similarity Engine</title>
+        <link>http://utk4rsh.github.io/2016/03/03/similarity-engine.html</link>
+        <guid isPermaLink="true">http://utk4rsh.github.io/2016/03/03/similarity-engine.html</guid>
+        <description>&lt;p&gt;This is an attempt to build a simple recommendation engine which recommends similar brands based on provided data set of random shoppers and the brands that they have marked as favorites. The engine takes a brand as input, and recommends 15 similar brands.The dataset is fairly simple and looks like the following&lt;/p&gt;
+
+&lt;p&gt;The dataset is fairly simple and looks like the following&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;UserID&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;ItemID&lt;/th&gt;
+      &lt;th style=&quot;text-align: right&quot;&gt;ItemName&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;2&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;Newport News&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;12&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;Aldo&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;41&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;Derek Lam&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;4&lt;/td&gt;
+      &lt;td style=&quot;text-align: right&quot;&gt;Moschino&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;For example, the engine might recommend&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;[“Citizen”, “Tag Heuer”, “Maurice Lacroix”, …] for “Bulova”&lt;/li&gt;
+  &lt;li&gt;[“American Eagle”, “Aeropostale”, “Wet Seal”, … ] for “Hollister”&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;implementation&quot;&gt;Implementation&lt;/h2&gt;
+
+&lt;p&gt;If we look at the data, the data is fairly simple and features on which recommendation for similar brands can be made should mostly be based on correlation of items with users.&lt;/p&gt;
+
+&lt;p&gt;Since we don’t know have much information like category of brands, strength of likeness of brand by user, simple similarity computation on item vectors (whose dimensions are the userids) should give a sense of similarity.&lt;/p&gt;
+
+&lt;p&gt;There are various vector similarity alogrithms that can be used. The following have be used and implemented&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;CosineSimilarity&lt;/li&gt;
+  &lt;li&gt;EuclideanSimilarity&lt;/li&gt;
+  &lt;li&gt;PearsonCorellationSimilarity&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Since there is no test data, it is hard to say which similarity algorithm is best in this scenario. However it is usually observed that CosineSimilarity performs better.&lt;/p&gt;
+
+&lt;h2 id=&quot;steps-to-execute&quot;&gt;Steps to Execute&lt;/h2&gt;
+
+&lt;p&gt;This is maven project, simple mvn exec can be used to run the project and get brands similar to a known brand.&lt;/p&gt;
+
+&lt;p&gt;The command expects 4 paramters :&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Similarity Algorithm  to be used. Please check the supported similarity algorithms in description above.&lt;/li&gt;
+  &lt;li&gt;Since Data Size is large and execution might consume much memory, similarity can be limited by number of users that should be considered.&lt;/li&gt;
+  &lt;li&gt;Due to similar memory reasons, number of brands can also be limited by a certain number&lt;/li&gt;
+  &lt;li&gt;Brand ID for which similar items need to recommended.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;mvn exec:java -Dexec.mainClass=”us.ml.similarity.engine.scratch.ItemSimilarityApp” -Dexec.cleanupDaemonThreads=false -Dexec.args=”CosineSimilarity 100000 5000 168”&lt;/p&gt;
+
+&lt;h2 id=&quot;sample-output&quot;&gt;Sample Output&lt;/h2&gt;
+
+&lt;p&gt;Top 15 results for : David Kahn&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;Item Name&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;Similarity Weigth&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Derek Rose&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;0.5773502691896258&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Imagine by Vince Camuto&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;0.5773502691896258&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Jhane Barnes&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;0.5773502691896258&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Magic Suit&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;0.5773502691896258&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Joey New York&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;0.5773502691896258&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Carmen Ho&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;0.5773502691896258&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Da-Nang&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;0.4714045207910317&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Calphalon&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;0.4082482904638629&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Hilary Radley&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;0.4082482904638629&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Lida Baday&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;0.4082482904638629&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Nic+Zoe&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;0.4082482904638629&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Tessuto&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;0.4082482904638629&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Elijah&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;0.4082482904638629&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Prevata&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;0.4082482904638629&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Think!&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;0.4082482904638629&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Sworn Virgins!&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;0.4082482904638629&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;##Thoughts&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;Since there is no strength of likeness or rating from a user on a particular brand, Collaborative filtering commonly used for recommender systems can be used with dummy ratings as well. These techniques however aim to fill in the missing entries of a user-item association matrix. Item-Item or User-User can also be derived once items for a user are filled in the matrix. However CF based on ALS treats the ratings in the user-item matrix as explicit preferences given by the user to the item, I
+could not find any literature if this approach would lead to correct results. ALS in general can be evaluated by computing RMSE (root mean squared error) on existing ratings but the might not be possible for item-item recommendation.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Apache Mahout also provides item-item similarity APIs which which uses spark for better memory and compute optimzations.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+</description>
+        <pubDate>Thu, 03 Mar 2016 00:00:00 +0530</pubDate>
+      </item>
+    
+      <item>
+        <title>AOP Logging</title>
+        <link>http://utk4rsh.github.io/2016/02/25/aop-logging.html</link>
+        <guid isPermaLink="true">http://utk4rsh.github.io/2016/02/25/aop-logging.html</guid>
+        <description>&lt;p&gt;I was trying to use Aspect Oriented based logging method entry, exit logs. A lot of examples I found on web were mostly tightly coupled with Spring, which had its own drawback of configuration through application context and XML files.
+The below is implementation using only AspectJ in which weaving happens at compile time.&lt;/p&gt;
+
+&lt;p&gt;The Annotation Class.&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-java&quot; data-lang=&quot;java&quot;&gt;&lt;span class=&quot;nd&quot;&gt;@Documented&lt;/span&gt;
+&lt;span class=&quot;nd&quot;&gt;@Retention&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;RetentionPolicy&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;RUNTIME&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;nd&quot;&gt;@Target&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;({&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ElementType&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;METHOD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ElementType&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;TYPE&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;})&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;nd&quot;&gt;@interface&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Loggable&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+ &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TRACE&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+ &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DEBUG&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+ &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;INFO&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+ &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;WARN&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+ &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ERROR&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+ &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;default&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Loggable&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;TRACE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+ &lt;span class=&quot;kt&quot;&gt;boolean&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;skipResult&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;default&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+ &lt;span class=&quot;kt&quot;&gt;boolean&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;skipArgs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;default&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;This is a simple annotation class which defines parameters like Log level at which logging should be enabled, controlling arguments and return values log messages for sensitive methods.&lt;/p&gt;
+
+&lt;p&gt;Maven Configuration&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-xml&quot; data-lang=&quot;xml&quot;&gt;&lt;span class=&quot;nt&quot;&gt;&amp;lt;dependencies&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.apache.logging.log4j&lt;span class=&quot;nt&quot;&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;log4j-api&lt;span class=&quot;nt&quot;&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;version&amp;gt;&lt;/span&gt;2.3&lt;span class=&quot;nt&quot;&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.apache.logging.log4j&lt;span class=&quot;nt&quot;&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;log4j-core&lt;span class=&quot;nt&quot;&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;version&amp;gt;&lt;/span&gt;2.3&lt;span class=&quot;nt&quot;&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;dependency&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.aspectj&lt;span class=&quot;nt&quot;&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;aspectjrt&lt;span class=&quot;nt&quot;&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;version&amp;gt;&lt;/span&gt;1.8.2&lt;span class=&quot;nt&quot;&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/dependency&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/dependencies&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;build&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;plugins&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;plugin&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.codehaus.mojo&lt;span class=&quot;nt&quot;&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;aspectj-maven-plugin&lt;span class=&quot;nt&quot;&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;version&amp;gt;&lt;/span&gt;1.7&lt;span class=&quot;nt&quot;&gt;&amp;lt;/version&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;configuration&amp;gt;&lt;/span&gt;
+                &lt;span class=&quot;nt&quot;&gt;&amp;lt;complianceLevel&amp;gt;&lt;/span&gt;1.8&lt;span class=&quot;nt&quot;&gt;&amp;lt;/complianceLevel&amp;gt;&lt;/span&gt;
+                &lt;span class=&quot;nt&quot;&gt;&amp;lt;showWeaveInfo&amp;gt;&lt;/span&gt;true&lt;span class=&quot;nt&quot;&gt;&amp;lt;/showWeaveInfo&amp;gt;&lt;/span&gt;
+                &lt;span class=&quot;nt&quot;&gt;&amp;lt;source&amp;gt;&lt;/span&gt;1.8&lt;span class=&quot;nt&quot;&gt;&amp;lt;/source&amp;gt;&lt;/span&gt;
+                &lt;span class=&quot;nt&quot;&gt;&amp;lt;target&amp;gt;&lt;/span&gt;1.8&lt;span class=&quot;nt&quot;&gt;&amp;lt;/target&amp;gt;&lt;/span&gt;
+                &lt;span class=&quot;nt&quot;&gt;&amp;lt;verbose&amp;gt;&lt;/span&gt;true&lt;span class=&quot;nt&quot;&gt;&amp;lt;/verbose&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;/configuration&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;executions&amp;gt;&lt;/span&gt;
+                &lt;span class=&quot;nt&quot;&gt;&amp;lt;execution&amp;gt;&lt;/span&gt;
+                    &lt;span class=&quot;nt&quot;&gt;&amp;lt;id&amp;gt;&lt;/span&gt;weave-classes&lt;span class=&quot;nt&quot;&gt;&amp;lt;/id&amp;gt;&lt;/span&gt;
+                    &lt;span class=&quot;nt&quot;&gt;&amp;lt;phase&amp;gt;&lt;/span&gt;process-classes&lt;span class=&quot;nt&quot;&gt;&amp;lt;/phase&amp;gt;&lt;/span&gt;
+                    &lt;span class=&quot;nt&quot;&gt;&amp;lt;goals&amp;gt;&lt;/span&gt;
+                        &lt;span class=&quot;nt&quot;&gt;&amp;lt;goal&amp;gt;&lt;/span&gt;compile&lt;span class=&quot;nt&quot;&gt;&amp;lt;/goal&amp;gt;&lt;/span&gt;
+                    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/goals&amp;gt;&lt;/span&gt;
+                &lt;span class=&quot;nt&quot;&gt;&amp;lt;/execution&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;/executions&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/plugin&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;plugin&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;groupId&amp;gt;&lt;/span&gt;org.codehaus.mojo&lt;span class=&quot;nt&quot;&gt;&amp;lt;/groupId&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;artifactId&amp;gt;&lt;/span&gt;exec-maven-plugin&lt;span class=&quot;nt&quot;&gt;&amp;lt;/artifactId&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;executions&amp;gt;&lt;/span&gt;
+                &lt;span class=&quot;nt&quot;&gt;&amp;lt;execution&amp;gt;&lt;/span&gt;
+                    &lt;span class=&quot;nt&quot;&gt;&amp;lt;goals&amp;gt;&lt;/span&gt;
+                        &lt;span class=&quot;nt&quot;&gt;&amp;lt;goal&amp;gt;&lt;/span&gt;java&lt;span class=&quot;nt&quot;&gt;&amp;lt;/goal&amp;gt;&lt;/span&gt;
+                    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/goals&amp;gt;&lt;/span&gt;
+                &lt;span class=&quot;nt&quot;&gt;&amp;lt;/execution&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;/executions&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;configuration&amp;gt;&lt;/span&gt;
+                &lt;span class=&quot;nt&quot;&gt;&amp;lt;mainClass&amp;gt;&lt;/span&gt;ninjabricks.logger.App&lt;span class=&quot;nt&quot;&gt;&amp;lt;/mainClass&amp;gt;&lt;/span&gt;
+            &lt;span class=&quot;nt&quot;&gt;&amp;lt;/configuration&amp;gt;&lt;/span&gt;
+        &lt;span class=&quot;nt&quot;&gt;&amp;lt;/plugin&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;/plugins&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/build&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;Sample Class&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-java&quot; data-lang=&quot;java&quot;&gt;&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;App&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+ 
+    &lt;span class=&quot;nd&quot;&gt;@Loggable&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;value&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Loggable&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;INFO&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;method1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;s1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;s2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;Coding Gibberish&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+ 
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[]&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;App&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sample&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;App&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;sample&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;method1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Ninja&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;Bricks&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+</description>
+        <pubDate>Thu, 25 Feb 2016 00:00:00 +0530</pubDate>
+      </item>
     
       <item>
         <title>Sample post</title>

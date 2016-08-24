@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html class="no-js">
+  <head>
+	<meta charset="utf-8">
+	<title>AOP Logging | Tech Blabber</title>
+	<meta name="description" content="I was trying to use Aspect Oriented based logging method entry, exit logs. A lot of examples I found on web were mostly tightly coupled with Spring, which ha...">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-Frame-Options" content="sameorigin">
+
+	<!-- CSS -->
+	<link rel="stylesheet" href="/css/main.css">
+
+	<!--Favicon-->
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+	<!-- Canonical -->
+	<link rel="canonical" href="http://utk4rsh.github.io/2016/02/25/aop-logging.html">
+
+	<!-- RSS -->
+	<link rel="alternate" type="application/atom+xml" title="Tech Blabber" href="http://utk4rsh.github.io/feed.xml" />
+
+	<!-- Font Awesome -->
+	<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- Google Fonts -->
+	
+	<link href="//fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,700italic,400italic" rel="stylesheet" type="text/css">
+	
+
+	<!-- KaTeX -->
+	
+	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.css">
+	<script src="//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.js"></script>
+	
+
+	<!-- Google Analytics -->
+	
+</head>
+
+  <body>
+    <header class="site-header">
+	<div class="branding">
+		
+		<a href="/">
+			<img class="avatar" src="/img/avatar.png" alt=""/>
+		</a>
+		
+		<h1 class="site-title">
+			<a href="/">Tech Blabber</a>
+		</h1>
+	</div>
+	<nav class="site-nav">
+		<ul>
+			
+			
+			
+			
+			<li>
+				<a class="page-link" href="/about/">
+					About
+				</a>
+			</li>
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			<!-- Social icons from Font Awesome, if enabled -->
+			
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li>
+	<a href="https://github.com/utk4rsh" title="Follow on GitHub">
+		<i class="fa fa-fw fa-github"></i>
+	</a>
+</li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li>
+	<a href="https://twitter.com/twitter" title="Follow on Twitter">
+		<i class="fa fa-fw fa-twitter"></i>
+	</a>
+</li>
+
+
+
+
+
+
+		</ul>
+	</nav>
+</header>
+
+    <div class="content">
+      <article >
+  <header style="background-image: url('/')">
+    <h1 class="title">AOP Logging</h1>
+    <p class="meta">
+    February 25, 2016
+    
+    </p>
+  </header>
+  <section class="post-content"><p>I was trying to use Aspect Oriented based logging method entry, exit logs. A lot of examples I found on web were mostly tightly coupled with Spring, which had its own drawback of configuration through application context and XML files.
+The below is implementation using only AspectJ in which weaving happens at compile time.</p>
+
+<p>The Annotation Class.</p>
+
+<figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="nd">@Documented</span>
+<span class="nd">@Retention</span><span class="o">(</span><span class="n">RetentionPolicy</span><span class="o">.</span><span class="na">RUNTIME</span><span class="o">)</span>
+<span class="nd">@Target</span><span class="o">({</span> <span class="n">ElementType</span><span class="o">.</span><span class="na">METHOD</span><span class="o">,</span> <span class="n">ElementType</span><span class="o">.</span><span class="na">TYPE</span> <span class="o">})</span>
+<span class="kd">public</span> <span class="nd">@interface</span> <span class="n">Loggable</span> <span class="o">{</span>
+ <span class="kt">int</span> <span class="n">TRACE</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+ <span class="kt">int</span> <span class="n">DEBUG</span> <span class="o">=</span> <span class="mi">1</span><span class="o">;</span>
+ <span class="kt">int</span> <span class="n">INFO</span> <span class="o">=</span> <span class="mi">2</span><span class="o">;</span>
+ <span class="kt">int</span> <span class="n">WARN</span> <span class="o">=</span> <span class="mi">3</span><span class="o">;</span>
+ <span class="kt">int</span> <span class="n">ERROR</span> <span class="o">=</span> <span class="mi">4</span><span class="o">;</span>
+ <span class="kt">int</span> <span class="nf">value</span><span class="o">()</span> <span class="k">default</span> <span class="n">Loggable</span><span class="o">.</span><span class="na">TRACE</span><span class="o">;</span>
+ <span class="kt">boolean</span> <span class="nf">skipResult</span><span class="o">()</span> <span class="k">default</span> <span class="kc">false</span><span class="o">;</span>
+ <span class="kt">boolean</span> <span class="nf">skipArgs</span><span class="o">()</span> <span class="k">default</span> <span class="kc">false</span><span class="o">;</span>
+<span class="o">}</span></code></pre></figure>
+
+<p>This is a simple annotation class which defines parameters like Log level at which logging should be enabled, controlling arguments and return values log messages for sensitive methods.</p>
+
+<p>Maven Configuration</p>
+
+<figure class="highlight"><pre><code class="language-xml" data-lang="xml"><span class="nt">&lt;dependencies&gt;</span>
+    <span class="nt">&lt;dependency&gt;</span>
+        <span class="nt">&lt;groupId&gt;</span>org.apache.logging.log4j<span class="nt">&lt;/groupId&gt;</span>
+        <span class="nt">&lt;artifactId&gt;</span>log4j-api<span class="nt">&lt;/artifactId&gt;</span>
+        <span class="nt">&lt;version&gt;</span>2.3<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>
+    <span class="nt">&lt;dependency&gt;</span>
+        <span class="nt">&lt;groupId&gt;</span>org.apache.logging.log4j<span class="nt">&lt;/groupId&gt;</span>
+        <span class="nt">&lt;artifactId&gt;</span>log4j-core<span class="nt">&lt;/artifactId&gt;</span>
+        <span class="nt">&lt;version&gt;</span>2.3<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>
+    <span class="nt">&lt;dependency&gt;</span>
+        <span class="nt">&lt;groupId&gt;</span>org.aspectj<span class="nt">&lt;/groupId&gt;</span>
+        <span class="nt">&lt;artifactId&gt;</span>aspectjrt<span class="nt">&lt;/artifactId&gt;</span>
+        <span class="nt">&lt;version&gt;</span>1.8.2<span class="nt">&lt;/version&gt;</span>
+    <span class="nt">&lt;/dependency&gt;</span>
+<span class="nt">&lt;/dependencies&gt;</span>
+<span class="nt">&lt;build&gt;</span>
+    <span class="nt">&lt;plugins&gt;</span>
+        <span class="nt">&lt;plugin&gt;</span>
+            <span class="nt">&lt;groupId&gt;</span>org.codehaus.mojo<span class="nt">&lt;/groupId&gt;</span>
+            <span class="nt">&lt;artifactId&gt;</span>aspectj-maven-plugin<span class="nt">&lt;/artifactId&gt;</span>
+            <span class="nt">&lt;version&gt;</span>1.7<span class="nt">&lt;/version&gt;</span>
+            <span class="nt">&lt;configuration&gt;</span>
+                <span class="nt">&lt;complianceLevel&gt;</span>1.8<span class="nt">&lt;/complianceLevel&gt;</span>
+                <span class="nt">&lt;showWeaveInfo&gt;</span>true<span class="nt">&lt;/showWeaveInfo&gt;</span>
+                <span class="nt">&lt;source&gt;</span>1.8<span class="nt">&lt;/source&gt;</span>
+                <span class="nt">&lt;target&gt;</span>1.8<span class="nt">&lt;/target&gt;</span>
+                <span class="nt">&lt;verbose&gt;</span>true<span class="nt">&lt;/verbose&gt;</span>
+            <span class="nt">&lt;/configuration&gt;</span>
+            <span class="nt">&lt;executions&gt;</span>
+                <span class="nt">&lt;execution&gt;</span>
+                    <span class="nt">&lt;id&gt;</span>weave-classes<span class="nt">&lt;/id&gt;</span>
+                    <span class="nt">&lt;phase&gt;</span>process-classes<span class="nt">&lt;/phase&gt;</span>
+                    <span class="nt">&lt;goals&gt;</span>
+                        <span class="nt">&lt;goal&gt;</span>compile<span class="nt">&lt;/goal&gt;</span>
+                    <span class="nt">&lt;/goals&gt;</span>
+                <span class="nt">&lt;/execution&gt;</span>
+            <span class="nt">&lt;/executions&gt;</span>
+        <span class="nt">&lt;/plugin&gt;</span>
+        <span class="nt">&lt;plugin&gt;</span>
+            <span class="nt">&lt;groupId&gt;</span>org.codehaus.mojo<span class="nt">&lt;/groupId&gt;</span>
+            <span class="nt">&lt;artifactId&gt;</span>exec-maven-plugin<span class="nt">&lt;/artifactId&gt;</span>
+            <span class="nt">&lt;executions&gt;</span>
+                <span class="nt">&lt;execution&gt;</span>
+                    <span class="nt">&lt;goals&gt;</span>
+                        <span class="nt">&lt;goal&gt;</span>java<span class="nt">&lt;/goal&gt;</span>
+                    <span class="nt">&lt;/goals&gt;</span>
+                <span class="nt">&lt;/execution&gt;</span>
+            <span class="nt">&lt;/executions&gt;</span>
+            <span class="nt">&lt;configuration&gt;</span>
+                <span class="nt">&lt;mainClass&gt;</span>ninjabricks.logger.App<span class="nt">&lt;/mainClass&gt;</span>
+            <span class="nt">&lt;/configuration&gt;</span>
+        <span class="nt">&lt;/plugin&gt;</span>
+    <span class="nt">&lt;/plugins&gt;</span>
+<span class="nt">&lt;/build&gt;</span></code></pre></figure>
+
+<p>Sample Class</p>
+
+<figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">App</span> <span class="o">{</span>
+ 
+    <span class="nd">@Loggable</span><span class="o">(</span><span class="n">value</span> <span class="o">=</span> <span class="n">Loggable</span><span class="o">.</span><span class="na">INFO</span><span class="o">)</span>
+    <span class="n">String</span> <span class="nf">method1</span><span class="o">(</span><span class="n">String</span> <span class="n">s1</span><span class="o">,</span> <span class="n">String</span> <span class="n">s2</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="s">"Coding Gibberish"</span><span class="o">;</span>
+    <span class="o">}</span>
+ 
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">App</span> <span class="n">sample</span> <span class="o">=</span> <span class="k">new</span> <span class="n">App</span><span class="o">();</span>
+        <span class="n">sample</span><span class="o">.</span><span class="na">method1</span><span class="o">(</span><span class="s">"Ninja"</span><span class="o">,</span> <span class="s">"Bricks"</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span></code></pre></figure>
+
+</section>
+</article>
+
+<!-- Post navigation -->
+
+
+<!-- Disqus -->
+
+
+    </div>
+    
+<script src="/js/katex_init.js"></script>
+
+
+
+<footer class="site-footer">
+	<p class="text">Powered by <a href="http://jekyllrb.com">Jekyll</a> with <a href="https://rohanchandra.github.io/project/type/">Type Theme</a>
+</p>
+</footer>
+
+
+  </body>
+</html>

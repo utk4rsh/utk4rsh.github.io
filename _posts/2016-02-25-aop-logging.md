@@ -1,4 +1,7 @@
-## AOP LOGGING
+---
+layout: post
+title: AOP Logging
+---
 
 I was trying to use Aspect Oriented based logging method entry, exit logs. A lot of examples I found on web were mostly tightly coupled with Spring, which had its own drawback of configuration through application context and XML files.
 The below is implementation using only AspectJ in which weaving happens at compile time.
@@ -6,7 +9,7 @@ The below is implementation using only AspectJ in which weaving happens at compi
 The Annotation Class.
 
 
-```java
+{% highlight java %}
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.TYPE })
@@ -20,13 +23,13 @@ public @interface Loggable {
  boolean skipResult() default false;
  boolean skipArgs() default false;
 }
-```
+{% endhighlight %}
 
 This is a simple annotation class which defines parameters like Log level at which logging should be enabled, controlling arguments and return values log messages for sensitive methods.
 
 Maven Configuration
 
-```html
+{% highlight xml %}
 <dependencies>
     <dependency>
         <groupId>org.apache.logging.log4j</groupId>
@@ -83,10 +86,10 @@ Maven Configuration
         </plugin>
     </plugins>
 </build>
-```
+{% endhighlight %}
 Sample Class
 
-```java
+{% highlight java %}
 public class App {
  
     @Loggable(value = Loggable.INFO)
@@ -99,4 +102,4 @@ public class App {
         sample.method1("Ninja", "Bricks");
     }
 }
-```
+{% endhighlight %}

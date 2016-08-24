@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html class="no-js">
+  <head>
+	<meta charset="utf-8">
+	<title>Simple Similarity Engine | Tech Blabber</title>
+	<meta name="description" content="This is an attempt to build a simple recommendation engine which recommends similar brands based on provided data set of random shoppers and the brands that ...">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-Frame-Options" content="sameorigin">
+
+	<!-- CSS -->
+	<link rel="stylesheet" href="/css/main.css">
+
+	<!--Favicon-->
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+	<!-- Canonical -->
+	<link rel="canonical" href="http://utk4rsh.github.io/2016/03/03/similarity-engine.html">
+
+	<!-- RSS -->
+	<link rel="alternate" type="application/atom+xml" title="Tech Blabber" href="http://utk4rsh.github.io/feed.xml" />
+
+	<!-- Font Awesome -->
+	<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- Google Fonts -->
+	
+	<link href="//fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,700italic,400italic" rel="stylesheet" type="text/css">
+	
+
+	<!-- KaTeX -->
+	
+	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.css">
+	<script src="//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.js"></script>
+	
+
+	<!-- Google Analytics -->
+	
+</head>
+
+  <body>
+    <header class="site-header">
+	<div class="branding">
+		
+		<a href="/">
+			<img class="avatar" src="/img/avatar.png" alt=""/>
+		</a>
+		
+		<h1 class="site-title">
+			<a href="/">Tech Blabber</a>
+		</h1>
+	</div>
+	<nav class="site-nav">
+		<ul>
+			
+			
+			
+			
+			<li>
+				<a class="page-link" href="/about/">
+					About
+				</a>
+			</li>
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			<!-- Social icons from Font Awesome, if enabled -->
+			
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li>
+	<a href="https://github.com/utk4rsh" title="Follow on GitHub">
+		<i class="fa fa-fw fa-github"></i>
+	</a>
+</li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li>
+	<a href="https://twitter.com/twitter" title="Follow on Twitter">
+		<i class="fa fa-fw fa-twitter"></i>
+	</a>
+</li>
+
+
+
+
+
+
+		</ul>
+	</nav>
+</header>
+
+    <div class="content">
+      <article >
+  <header style="background-image: url('/')">
+    <h1 class="title">Simple Similarity Engine</h1>
+    <p class="meta">
+    March 3, 2016
+    
+    </p>
+  </header>
+  <section class="post-content"><p>This is an attempt to build a simple recommendation engine which recommends similar brands based on provided data set of random shoppers and the brands that they have marked as favorites. The engine takes a brand as input, and recommends 15 similar brands.The dataset is fairly simple and looks like the following</p>
+
+<p>The dataset is fairly simple and looks like the following</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>UserID</th>
+      <th style="text-align: center">ItemID</th>
+      <th style="text-align: right">ItemName</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td style="text-align: center">2</td>
+      <td style="text-align: right">Newport News</td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td style="text-align: center">12</td>
+      <td style="text-align: right">Aldo</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td style="text-align: center">41</td>
+      <td style="text-align: right">Derek Lam</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td style="text-align: center">4</td>
+      <td style="text-align: right">Moschino</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>For example, the engine might recommend</p>
+
+<ol>
+  <li>[“Citizen”, “Tag Heuer”, “Maurice Lacroix”, …] for “Bulova”</li>
+  <li>[“American Eagle”, “Aeropostale”, “Wet Seal”, … ] for “Hollister”</li>
+</ol>
+
+<h2 id="implementation">Implementation</h2>
+
+<p>If we look at the data, the data is fairly simple and features on which recommendation for similar brands can be made should mostly be based on correlation of items with users.</p>
+
+<p>Since we don’t know have much information like category of brands, strength of likeness of brand by user, simple similarity computation on item vectors (whose dimensions are the userids) should give a sense of similarity.</p>
+
+<p>There are various vector similarity alogrithms that can be used. The following have be used and implemented</p>
+
+<ol>
+  <li>CosineSimilarity</li>
+  <li>EuclideanSimilarity</li>
+  <li>PearsonCorellationSimilarity</li>
+</ol>
+
+<p>Since there is no test data, it is hard to say which similarity algorithm is best in this scenario. However it is usually observed that CosineSimilarity performs better.</p>
+
+<h2 id="steps-to-execute">Steps to Execute</h2>
+
+<p>This is maven project, simple mvn exec can be used to run the project and get brands similar to a known brand.</p>
+
+<p>The command expects 4 paramters :</p>
+
+<ol>
+  <li>Similarity Algorithm  to be used. Please check the supported similarity algorithms in description above.</li>
+  <li>Since Data Size is large and execution might consume much memory, similarity can be limited by number of users that should be considered.</li>
+  <li>Due to similar memory reasons, number of brands can also be limited by a certain number</li>
+  <li>Brand ID for which similar items need to recommended.</li>
+</ol>
+
+<p>mvn exec:java -Dexec.mainClass=”us.ml.similarity.engine.scratch.ItemSimilarityApp” -Dexec.cleanupDaemonThreads=false -Dexec.args=”CosineSimilarity 100000 5000 168”</p>
+
+<h2 id="sample-output">Sample Output</h2>
+
+<p>Top 15 results for : David Kahn</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Item Name</th>
+      <th style="text-align: center">Similarity Weigth</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Derek Rose</td>
+      <td style="text-align: center">0.5773502691896258</td>
+    </tr>
+    <tr>
+      <td>Imagine by Vince Camuto</td>
+      <td style="text-align: center">0.5773502691896258</td>
+    </tr>
+    <tr>
+      <td>Jhane Barnes</td>
+      <td style="text-align: center">0.5773502691896258</td>
+    </tr>
+    <tr>
+      <td>Magic Suit</td>
+      <td style="text-align: center">0.5773502691896258</td>
+    </tr>
+    <tr>
+      <td>Joey New York</td>
+      <td style="text-align: center">0.5773502691896258</td>
+    </tr>
+    <tr>
+      <td>Carmen Ho</td>
+      <td style="text-align: center">0.5773502691896258</td>
+    </tr>
+    <tr>
+      <td>Da-Nang</td>
+      <td style="text-align: center">0.4714045207910317</td>
+    </tr>
+    <tr>
+      <td>Calphalon</td>
+      <td style="text-align: center">0.4082482904638629</td>
+    </tr>
+    <tr>
+      <td>Hilary Radley</td>
+      <td style="text-align: center">0.4082482904638629</td>
+    </tr>
+    <tr>
+      <td>Lida Baday</td>
+      <td style="text-align: center">0.4082482904638629</td>
+    </tr>
+    <tr>
+      <td>Nic+Zoe</td>
+      <td style="text-align: center">0.4082482904638629</td>
+    </tr>
+    <tr>
+      <td>Tessuto</td>
+      <td style="text-align: center">0.4082482904638629</td>
+    </tr>
+    <tr>
+      <td>Elijah</td>
+      <td style="text-align: center">0.4082482904638629</td>
+    </tr>
+    <tr>
+      <td>Prevata</td>
+      <td style="text-align: center">0.4082482904638629</td>
+    </tr>
+    <tr>
+      <td>Think!</td>
+      <td style="text-align: center">0.4082482904638629</td>
+    </tr>
+    <tr>
+      <td>Sworn Virgins!</td>
+      <td style="text-align: center">0.4082482904638629</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>##Thoughts</p>
+
+<ol>
+  <li>
+    <p>Since there is no strength of likeness or rating from a user on a particular brand, Collaborative filtering commonly used for recommender systems can be used with dummy ratings as well. These techniques however aim to fill in the missing entries of a user-item association matrix. Item-Item or User-User can also be derived once items for a user are filled in the matrix. However CF based on ALS treats the ratings in the user-item matrix as explicit preferences given by the user to the item, I
+could not find any literature if this approach would lead to correct results. ALS in general can be evaluated by computing RMSE (root mean squared error) on existing ratings but the might not be possible for item-item recommendation.</p>
+  </li>
+  <li>
+    <p>Apache Mahout also provides item-item similarity APIs which which uses spark for better memory and compute optimzations.</p>
+  </li>
+</ol>
+
+</section>
+</article>
+
+<!-- Post navigation -->
+
+
+<!-- Disqus -->
+
+
+    </div>
+    
+<script src="/js/katex_init.js"></script>
+
+
+
+<footer class="site-footer">
+	<p class="text">Powered by <a href="http://jekyllrb.com">Jekyll</a> with <a href="https://rohanchandra.github.io/project/type/">Type Theme</a>
+</p>
+</footer>
+
+
+  </body>
+</html>
