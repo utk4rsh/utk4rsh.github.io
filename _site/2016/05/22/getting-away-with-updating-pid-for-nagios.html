@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html class="no-js">
+  <head>
+	<meta charset="utf-8">
+	<title>Automaticaly Updating PID for Nagios | Tech Blabber</title>
+	<meta name="description" content="If you are using nagios to monitor your applications in production, you might have faced the need to regularly configure Nagios with constantly changing PIDs.">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta http-equiv="X-Frame-Options" content="sameorigin">
+
+	<!-- CSS -->
+	<link rel="stylesheet" href="/css/main.css">
+
+	<!--Favicon-->
+	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+
+	<!-- Canonical -->
+	<link rel="canonical" href="http://utk4rsh.github.io/2016/05/22/getting-away-with-updating-pid-for-nagios.html">
+
+	<!-- RSS -->
+	<link rel="alternate" type="application/atom+xml" title="Tech Blabber" href="http://utk4rsh.github.io/feed.xml" />
+
+	<!-- Font Awesome -->
+	<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet">
+
+	<!-- Google Fonts -->
+	
+	<link href="//fonts.googleapis.com/css?family=Source+Sans+Pro:400,700,700italic,400italic" rel="stylesheet" type="text/css">
+	
+
+	<!-- KaTeX -->
+	
+	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.css">
+	<script src="//cdnjs.cloudflare.com/ajax/libs/KaTeX/0.3.0/katex.min.js"></script>
+	
+
+	<!-- Google Analytics -->
+	
+	<script>
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+	ga('create', 'UA-83963960-1', 'auto');
+	ga('send', 'pageview');
+	</script>
+	
+</head>
+
+  <body>
+    <header class="site-header">
+	<div class="branding">
+		
+		<a href="/">
+			<img class="avatar" src="/img/avatar.png" alt=""/>
+		</a>
+		
+		<h1 class="site-title">
+			<a href="/">Tech Blabber</a>
+		</h1>
+	</div>
+	<nav class="site-nav">
+		<ul>
+			
+			
+			
+			
+			<li>
+				<a class="page-link" href="/about/">
+					About
+				</a>
+			</li>
+			
+			
+			
+			
+			
+			
+			
+			
+			<!-- Social icons from Font Awesome, if enabled -->
+			
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li>
+	<a href="https://github.com/utk4rsh" title="Follow on GitHub">
+		<i class="fa fa-fw fa-github"></i>
+	</a>
+</li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li>
+	<a href="https://twitter.com/twitter" title="Follow on Twitter">
+		<i class="fa fa-fw fa-twitter"></i>
+	</a>
+</li>
+
+
+
+
+
+
+		</ul>
+	</nav>
+</header>
+
+    <div class="content">
+      <article >
+  <header style="background-image: url('/')">
+    <h1 class="title">Automaticaly Updating PID for Nagios</h1>
+    <p class="meta">
+    May 22, 2016
+    
+    </p>
+  </header>
+  <section class="post-content"><p>If you are using nagios to monitor your applications in production, you might have faced the need to regularly configure Nagios with constantly changing PIDs.</p>
+
+<p>We used nagios for monitoring and everytime application servers like tomcat are restarted, nagios needs to be re-configured with new PID. This involves a bit of manual intervention every time and needs the same steps to be followed for re-configuration. Hence why not automate?</p>
+
+<p>Here are the steps that would work to automatically perform this task for tomcat :</p>
+
+<h3 id="configuring-tomcat-to-persist-pid">Configuring Tomcat to persist PID</h3>
+
+<ul>
+  <li>Update the setenv.sh add these two lines at the beginning of the script</li>
+</ul>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash">   <span class="nb">export </span><span class="nv">CATALINA_BASE</span><span class="o">=</span><span class="s2">"/opt/apache-tomcat-7.0.68"</span>
+   <span class="nv">CATALINA_PID</span><span class="o">=</span><span class="s2">"</span><span class="nv">$CATALINA_BASE</span><span class="s2">/bin/catalina.pid"</span>
+   </code></pre></figure>
+
+<p>Make sure CATALINA_BASE is the directory where tomcat is present and verify that CATALINA_BASE is reachable.</p>
+
+<p>Sample :</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash">   <span class="nv">$ </span>cat setenv.sh 
+   <span class="nb">export </span><span class="nv">CATALINA_BASE</span><span class="o">=</span><span class="s2">"/opt/apache-tomcat-7.0.68"</span>
+   <span class="nv">CATALINA_PID</span><span class="o">=</span><span class="s2">"</span><span class="nv">$CATALINA_BASE</span><span class="s2">/bin/catalina.pid"</span>
+   <span class="nb">export </span><span class="nv">CATALINA_OPTS</span><span class="o">=</span><span class="s2">"</span><span class="nv">$CATALINA_OPTS</span><span class="s2"> -Xms12288m"</span>
+   <span class="nb">export </span><span class="nv">CATALINA_OPTS</span><span class="o">=</span><span class="s2">"</span><span class="nv">$CATALINA_OPTS</span><span class="s2"> -Xmx12288m"</span>
+   <span class="nb">export </span><span class="nv">CATALINA_OPTS</span><span class="o">=</span><span class="s2">"</span><span class="nv">$CATALINA_OPTS</span><span class="s2"> -XX:MaxPermSize=1024m"</span>
+   <span class="nb">export </span><span class="nv">CATALINA_OPTS</span><span class="o">=</span><span class="s2">"</span><span class="nv">$CATALINA_OPTS</span><span class="s2"> -XX:+HeapDumpOnOutOfMemoryError"</span>
+   <span class="nv">$ </span>./startup.sh 
+   Using CATALINA_BASE:   /opt/apache-tomcat-7.0.68
+   Using CATALINA_HOME:   /opt/apache-tomcat-7.0.68
+   Using CATALINA_TMPDIR: /opt/apache-tomcat-7.0.68/temp
+   Using JRE_HOME:        /usr
+   Using CLASSPATH:       /opt/apache-tomcat-7.0.68/bin/bootstrap.jar:
+                          /opt/apache-tomcat-7.0.68/bin/tomcat-juli.jar
+   Using CATALINA_PID:    /opt/apache-tomcat-7.0.68/bin/catalina.pid
+   Tomcat started.
+   <span class="nv">$ </span>cat catalina.pid 
+   5340
+   </code></pre></figure>
+
+<h3 id="setting-up-password-less-ssh-login">Setting up password-less SSH Login</h3>
+
+<p>In order to let nagios periodically poll using SSH application servers to check for updated PID, it would need to configure SSH Key-Based Authentication on nagios server. The detailed steps are listed <a href="http://www.tecmint.com/ssh-passwordless-login-using-ssh-keygen-in-5-easy-steps/">here</a></p>
+
+<h3 id="updating-nagios-configuration">Updating Nagios Configuration</h3>
+
+<p>Nagios configuration files are structured file where each block is easily parseable. <a href="https://github.com/pynag/pynag">Pynag</a> has python modules and utilities for reading and updating Nagios configuration. Following are the steps that a shell script needs to achieve :</p>
+
+<ul>
+  <li>Declare all hosts, PID paths for which nagios configuration has to be reloaded.</li>
+  <li>Get the latest PID by SSHing to the host.</li>
+  <li>Use Pynag to get the current PID</li>
+  <li>Use Pynag to update the PID if PID has changed</li>
+  <li>Reload nagios</li>
+</ul>
+
+<p>Here is the crude shell script to do the above steps</p>
+
+<figure class="highlight"><pre><code class="language-bash" data-lang="bash"><span class="c">#!/bin/bash</span>
+
+<span class="c">#Declare all hosts for which nagios configuration has to be updated</span>
+<span class="nb">declare</span> -A hosts
+<span class="nv">hosts</span><span class="o">=(</span> <span class="o">[</span><span class="s2">"localhost"</span><span class="o">]=</span><span class="s2">"127.0.0.1"</span> <span class="o">)</span>
+
+<span class="c">#Declare all tomacat location/ script to get PID</span>
+<span class="nb">declare</span> -A tomcats
+<span class="nv">tomcats</span><span class="o">=(</span> <span class="o">[</span><span class="s2">"localhost"</span><span class="o">]=</span><span class="s2">"cat /opt/apache-tomcat-8.0.23/bin/catalina.pid"</span> <span class="o">)</span>
+
+<span class="c">#Start updating the nagios configuration</span>
+
+<span class="k">for </span>key <span class="k">in</span> <span class="k">${</span><span class="p">!hosts[@]</span><span class="k">}</span>; <span class="k">do
+    </span><span class="nv">latest_pid</span><span class="o">=</span><span class="k">$(</span>ssh root@<span class="k">${</span><span class="nv">hosts</span><span class="p">[</span><span class="k">${</span><span class="nv">key</span><span class="k">}</span><span class="p">]</span><span class="k">}</span> <span class="k">${</span><span class="nv">tomcats</span><span class="p">[</span><span class="k">${</span><span class="nv">key</span><span class="k">}</span><span class="p">]</span><span class="k">})</span>
+    <span class="nv">check_command</span><span class="o">=</span><span class="k">$(</span>pynag list check_command where <span class="nv">object_type</span><span class="o">=</span>service and <span class="se">\</span>
+    <span class="nv">host_name</span><span class="o">=</span><span class="s2">"</span><span class="k">${</span><span class="nv">key</span><span class="k">}</span><span class="s2">"</span> --cfg_file<span class="o">=</span>../../tests/dataset01/nagios/nagios.cfg <span class="se">\</span>
+    --quiet<span class="k">)</span>
+    <span class="nv">IFS</span><span class="o">=</span><span class="s1">'!'</span> <span class="nb">read</span> -ra check_command_STRINGS <span class="o">&lt;&lt;&lt;</span> <span class="s2">"</span><span class="nv">$check_command</span><span class="s2">"</span>
+    <span class="nv">new_command</span><span class="o">=</span><span class="s2">""</span>
+    <span class="nv">delimiter</span><span class="o">=</span><span class="s2">"!"</span>
+    <span class="nv">length</span><span class="o">=</span><span class="k">${#</span><span class="nv">check_command_STRINGS</span><span class="p">[@]</span><span class="k">}</span>
+    <span class="k">for</span> <span class="o">((</span><span class="nv">i</span><span class="o">=</span>0;i&lt;<span class="o">=</span><span class="nv">$length</span>;i++<span class="o">))</span>; <span class="k">do
+        if</span> <span class="o">[</span> <span class="nv">$i</span> -eq 1 <span class="o">]</span>;<span class="k">then
+            </span>new_command+<span class="o">=</span><span class="s2">"</span><span class="nv">$latest_pid</span><span class="s2">"</span><span class="nv">$delimiter</span>
+            <span class="nv">old_pid</span><span class="o">=</span><span class="k">${</span><span class="nv">check_command_STRINGS</span><span class="p">[</span><span class="nv">$i</span><span class="p">]</span><span class="k">}</span>
+        <span class="k">elif</span> <span class="o">[</span> ! -z <span class="s2">"</span><span class="k">${</span><span class="nv">check_command_STRINGS</span><span class="p">[</span><span class="nv">$i</span><span class="p">]</span><span class="k">}</span><span class="s2">"</span> -a <span class="se">\</span>
+		<span class="s2">"</span><span class="k">${</span><span class="nv">check_command_STRINGS</span><span class="p">[</span><span class="nv">$i</span><span class="p">]</span><span class="k">}</span><span class="s2">"</span> !<span class="o">=</span> <span class="s2">" "</span> <span class="o">]</span>; <span class="k">then
+            </span>new_command+<span class="o">=</span><span class="s2">"</span><span class="k">${</span><span class="nv">check_command_STRINGS</span><span class="p">[</span><span class="nv">$i</span><span class="p">]</span><span class="k">}</span><span class="s2">"</span><span class="nv">$delimiter</span>
+        <span class="k">fi
+    done
+    </span><span class="nv">new_check_command</span><span class="o">=</span><span class="k">${</span><span class="nv">new_command</span><span class="p">%?</span><span class="k">}</span>
+    <span class="nv">update_command</span><span class="o">=</span><span class="k">$(</span>pynag update SET <span class="nv">check_command</span><span class="o">=</span><span class="k">${</span><span class="nv">new_check_command</span><span class="k">}</span> <span class="se">\</span>
+    WHERE <span class="nv">host_name</span><span class="o">=</span><span class="s2">"</span><span class="k">${</span><span class="nv">key</span><span class="k">}</span><span class="s2">"</span> and <span class="nv">object_type</span><span class="o">=</span>service <span class="se">\</span>
+    --cfg_file<span class="o">=</span>../../tests/dataset01/nagios/nagios.cfg --force<span class="k">)</span>
+    <span class="nv">details_after_update</span><span class="o">=</span><span class="k">$(</span>pynag list host_name check_command where <span class="se">\</span>
+    <span class="nv">object_type</span><span class="o">=</span>service and <span class="nv">host_name</span><span class="o">=</span><span class="s2">"</span><span class="k">${</span><span class="nv">key</span><span class="k">}</span><span class="s2">"</span> <span class="se">\</span>
+    --cfg_file<span class="o">=</span>../../tests/dataset01/nagios/nagios.cfg --quiet<span class="k">)</span>
+    <span class="nb">echo</span> <span class="s2">"</span><span class="nv">$details_after_update</span><span class="s2">"</span>
+<span class="k">done</span>
+
+<span class="c">#When updated, reload nagios</span></code></pre></figure>
+
+<h3 id="setting-up-cron-job">Setting up cron job</h3>
+<p>The last step to automate would be to setup a cron job to execute this shell script periodically.</p>
+</section>
+</article>
+
+<!-- Post navigation -->
+
+
+<!-- Disqus -->
+
+<div class="comments">
+  <div id="disqus_thread"></div>
+<script type="text/javascript">
+	var disqus_shortname = 'utkarshsrivastava-me';
+	(function() {
+		var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+		dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+		(document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+	})();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+
+</div>
+
+
+    </div>
+    
+<script src="/js/katex_init.js"></script>
+
+
+
+<footer class="site-footer">
+	<p class="text">Powered by <a href="http://jekyllrb.com">Jekyll</a>
+</p>
+</footer>
+
+
+  </body>
+</html>

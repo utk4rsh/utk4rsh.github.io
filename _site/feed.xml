@@ -5,7 +5,117 @@
     <atom:link href="http://utk4rsh.github.io/feed.xml" rel="self" type="application/rss+xml"/>
     <link>http://utk4rsh.github.io/</link>
     <description></description>
-    <pubDate>Mon, 29 Aug 2016 16:38:09 +0530</pubDate>
+    <pubDate>Sat, 10 Sep 2016 11:51:35 +0530</pubDate>
+    
+      <item>
+        <title>Automaticaly Updating PID for Nagios</title>
+        <link>http://utk4rsh.github.io/2016/05/22/getting-away-with-updating-pid-for-nagios.html</link>
+        <guid isPermaLink="true">http://utk4rsh.github.io/2016/05/22/getting-away-with-updating-pid-for-nagios.html</guid>
+        <description>&lt;p&gt;If you are using nagios to monitor your applications in production, you might have faced the need to regularly configure Nagios with constantly changing PIDs.&lt;/p&gt;
+
+&lt;p&gt;We used nagios for monitoring and everytime application servers like tomcat are restarted, nagios needs to be re-configured with new PID. This involves a bit of manual intervention every time and needs the same steps to be followed for re-configuration. Hence why not automate?&lt;/p&gt;
+
+&lt;p&gt;Here are the steps that would work to automatically perform this task for tomcat :&lt;/p&gt;
+
+&lt;h3 id=&quot;configuring-tomcat-to-persist-pid&quot;&gt;Configuring Tomcat to persist PID&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Update the setenv.sh add these two lines at the beginning of the script&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;   &lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;CATALINA_BASE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;/opt/apache-tomcat-7.0.68&quot;&lt;/span&gt;
+   &lt;span class=&quot;nv&quot;&gt;CATALINA_PID&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$CATALINA_BASE&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/bin/catalina.pid&quot;&lt;/span&gt;
+   &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;p&gt;Make sure CATALINA_BASE is the directory where tomcat is present and verify that CATALINA_BASE is reachable.&lt;/p&gt;
+
+&lt;p&gt;Sample :&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;   &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;cat setenv.sh 
+   &lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;CATALINA_BASE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;/opt/apache-tomcat-7.0.68&quot;&lt;/span&gt;
+   &lt;span class=&quot;nv&quot;&gt;CATALINA_PID&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$CATALINA_BASE&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/bin/catalina.pid&quot;&lt;/span&gt;
+   &lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;CATALINA_OPTS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$CATALINA_OPTS&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt; -Xms12288m&quot;&lt;/span&gt;
+   &lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;CATALINA_OPTS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$CATALINA_OPTS&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt; -Xmx12288m&quot;&lt;/span&gt;
+   &lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;CATALINA_OPTS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$CATALINA_OPTS&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt; -XX:MaxPermSize=1024m&quot;&lt;/span&gt;
+   &lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;CATALINA_OPTS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$CATALINA_OPTS&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt; -XX:+HeapDumpOnOutOfMemoryError&quot;&lt;/span&gt;
+   &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;./startup.sh 
+   Using CATALINA_BASE:   /opt/apache-tomcat-7.0.68
+   Using CATALINA_HOME:   /opt/apache-tomcat-7.0.68
+   Using CATALINA_TMPDIR: /opt/apache-tomcat-7.0.68/temp
+   Using JRE_HOME:        /usr
+   Using CLASSPATH:       /opt/apache-tomcat-7.0.68/bin/bootstrap.jar:
+                          /opt/apache-tomcat-7.0.68/bin/tomcat-juli.jar
+   Using CATALINA_PID:    /opt/apache-tomcat-7.0.68/bin/catalina.pid
+   Tomcat started.
+   &lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;cat catalina.pid 
+   5340
+   &lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;h3 id=&quot;setting-up-password-less-ssh-login&quot;&gt;Setting up password-less SSH Login&lt;/h3&gt;
+
+&lt;p&gt;In order to let nagios periodically poll using SSH application servers to check for updated PID, it would need to configure SSH Key-Based Authentication on nagios server. The detailed steps are listed &lt;a href=&quot;http://www.tecmint.com/ssh-passwordless-login-using-ssh-keygen-in-5-easy-steps/&quot;&gt;here&lt;/a&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;updating-nagios-configuration&quot;&gt;Updating Nagios Configuration&lt;/h3&gt;
+
+&lt;p&gt;Nagios configuration files are structured file where each block is easily parseable. &lt;a href=&quot;https://github.com/pynag/pynag&quot;&gt;Pynag&lt;/a&gt; has python modules and utilities for reading and updating Nagios configuration. Following are the steps that a shell script needs to achieve :&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Declare all hosts, PID paths for which nagios configuration has to be reloaded.&lt;/li&gt;
+  &lt;li&gt;Get the latest PID by SSHing to the host.&lt;/li&gt;
+  &lt;li&gt;Use Pynag to get the current PID&lt;/li&gt;
+  &lt;li&gt;Use Pynag to update the PID if PID has changed&lt;/li&gt;
+  &lt;li&gt;Reload nagios&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Here is the crude shell script to do the above steps&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-bash&quot; data-lang=&quot;bash&quot;&gt;&lt;span class=&quot;c&quot;&gt;#!/bin/bash&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;#Declare all hosts for which nagios configuration has to be updated&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;declare&lt;/span&gt; -A hosts
+&lt;span class=&quot;nv&quot;&gt;hosts&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=(&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;localhost&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;127.0.0.1&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;#Declare all tomacat location/ script to get PID&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;declare&lt;/span&gt; -A tomcats
+&lt;span class=&quot;nv&quot;&gt;tomcats&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=(&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;localhost&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;cat /opt/apache-tomcat-8.0.23/bin/catalina.pid&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;#Start updating the nagios configuration&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;key &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;!hosts[@]&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;do
+    &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;latest_pid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;ssh root@&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;hosts&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;tomcats&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;})&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;check_command&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;pynag list check_command where &lt;span class=&quot;nv&quot;&gt;object_type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;service and &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;host_name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; --cfg_file&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;../../tests/dataset01/nagios/nagios.cfg &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    --quiet&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;IFS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'!'&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;read&lt;/span&gt; -ra check_command_STRINGS &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$check_command&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;new_command&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;delimiter&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;!&quot;&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;length&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${#&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;check_command_STRINGS&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[@]&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;0;i&amp;lt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$length&lt;/span&gt;;i++&lt;span class=&quot;o&quot;&gt;))&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;do
+        if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$i&lt;/span&gt; -eq 1 &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;;&lt;span class=&quot;k&quot;&gt;then
+            &lt;/span&gt;new_command+&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$latest_pid&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$delimiter&lt;/span&gt;
+            &lt;span class=&quot;nv&quot;&gt;old_pid&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;check_command_STRINGS&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;elif&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; ! -z &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;check_command_STRINGS&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; -a &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+		&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;check_command_STRINGS&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; !&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot; &quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;; &lt;span class=&quot;k&quot;&gt;then
+            &lt;/span&gt;new_command+&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;check_command_STRINGS&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$delimiter&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;fi
+    done
+    &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;new_check_command&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;new_command&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;%?&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;update_command&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;pynag update SET &lt;span class=&quot;nv&quot;&gt;check_command&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;new_check_command&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    WHERE &lt;span class=&quot;nv&quot;&gt;host_name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; and &lt;span class=&quot;nv&quot;&gt;object_type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;service &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    --cfg_file&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;../../tests/dataset01/nagios/nagios.cfg --force&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;details_after_update&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;$(&lt;/span&gt;pynag list host_name check_command where &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    &lt;span class=&quot;nv&quot;&gt;object_type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;service and &lt;span class=&quot;nv&quot;&gt;host_name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;key&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+    --cfg_file&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;../../tests/dataset01/nagios/nagios.cfg --quiet&lt;span class=&quot;k&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$details_after_update&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;done&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;#When updated, reload nagios&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+
+&lt;h3 id=&quot;setting-up-cron-job&quot;&gt;Setting up cron job&lt;/h3&gt;
+&lt;p&gt;The last step to automate would be to setup a cron job to execute this shell script periodically.&lt;/p&gt;
+</description>
+        <pubDate>Sun, 22 May 2016 00:00:00 +0530</pubDate>
+      </item>
     
       <item>
         <title>Caffe &amp; Deep Visualization Toolbox</title>
