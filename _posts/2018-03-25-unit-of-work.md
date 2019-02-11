@@ -1,6 +1,6 @@
 ---
 layout: post
-title: AOP Logging
+title: Unit of Work
 ---
 I really like to use AOP because it increases modularity by allowing the separation of cross-cutting concerns. One such concern or commonality is using UnitOfWork at data access layer to manage database transactions which span multiple blocks of code. The below is implementation using only MethodInterceptor to achieve this 
 
