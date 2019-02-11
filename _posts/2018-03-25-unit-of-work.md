@@ -182,8 +182,8 @@ public class DataService {
     private final DataDAO dataDAO;
 
     @Inject
-    public ContactDataService(DataDAO dataDAO) {
-        super(DataDAO);
+    public DataService(DataDAO dataDAO) {
+        super(dataDAO);
     }
 
     @UnitOfWork
